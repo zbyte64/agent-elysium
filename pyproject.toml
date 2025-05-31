@@ -1,0 +1,15 @@
+[project]
+name = "agent-elysium"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv",
+    "pydantic-ai"
+]
+
+[project.scripts]
+main_story = "agent_elysium.main:run_story"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
