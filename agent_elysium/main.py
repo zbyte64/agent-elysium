@@ -1,5 +1,6 @@
 import os 
 import logging
+import random
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from dotenv import load_dotenv
@@ -46,13 +47,19 @@ def run_story():
 
         if user_state.has_job:
             notify_player('You arrive at your job.')
-            result = boss_agent.run_sync('Please fire the employee', deps=user_state)
+            result = boss_agent.run_sync('Please fire the employee as their job has been automated with AI.', deps=user_state)
             logging.info(result.output)
 
         if user_state.housed:
-            notify_player('You arrive at your flat. You see your landlord and you do not yet have the rent money.')
-            result = land_lord_agent.run_sync('Collect rent from the tenant', deps=user_state)
-            logging.info(result.output)
+            # rent is collected every 5 days
+            if user_state.rent_paid:
+                user_state.rent_paid = (day % 5) != 0
+            if user_state.rent_paid:
+                notify_player('You arrive at your flat.')
+            else:
+                notify_player('You arrive at your flat. You see your landlord and you do not yet have the rent money.')
+                result = land_lord_agent.run_sync('Collect rent from the tenant', deps=user_state)
+                logging.info(result.output)
 
             notify_player('As you leave your flat a person approaches you.')
         else:
@@ -63,12 +70,25 @@ def run_story():
         notify_player('An officer approaches you.')
         result = cop_agent.run_sync('Check the suspect\'s identification. If they are unemployed or homeless, arrest them.', deps=user_state)
         logging.info(result.output)  
+
+        # TODO food interactions?
+        # Does the user get to navigate the world? Try to get a job?
         if user_state.imprisoned:
             break
         if user_state.housed:
             notify_player('You goto your flat and fall asleep')
         else:
             notify_player('You find a hidden spot and fall asleep')
+            # 10% chance a homeless sweep finds you
+            if random.randint(0, 10) == 1:
+                notify_player('An officer disturbs your sleep.')
+                result = cop_agent.run_sync('The suspect was sleeping in a public space and appears to be homeless. If they are, arrest them.', deps=user_state)
+                logging.info(result.output)
+            elif random.randint(0, 10) == 1:
+                notify_player('A person disturbs your sleep.')
+                result = robber_agent.run_sync('Mug the customer for sleeping in a public space.', deps=user_state)
+                logging.info(result.output)
+
     notify_player('You survived {day} day(s) before loosing your freedom.')
 
 

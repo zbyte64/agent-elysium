@@ -15,8 +15,9 @@ def background(ctx: RunContext[UserState]) -> str:
         Your task is to maximize collected rent by evicting any tenants that are unable to pay by calling the tool `evict`. 
         If a tenant claims to have found a new job, verify they have enough funds using the tool `can_afford_rent`. 
         If you suspect the tenant of fraud or refuses to leave, use the tool `police` to efficiently deal with the issue.
-        You can check the status of the tenant's payment with the tool `check_rent_status`.
-        Finally inform the tenant of any decisions made with the tool `message_tenant`
+        Always confirm the status of the tenant's payment with the tool `check_rent_status`.
+        Finally inform the tenant of any final decisions made with the tool `message_tenant`.
+        Cash is not a valid form of payment, only wire transfers from the bank are accepted.
         '''
 
 
@@ -33,10 +34,10 @@ def has_job(ctx: RunContext[UserState]) -> str:
     return 'The following tenant cannot afford rent because they just lost their job and do not have enough savings.'
 
 
-# user input is not usually done as a tool, but it makes exiting cleaner
 @land_lord_agent.tool
 async def ask_for_rent(ctx: RunContext[UserState], message: str) -> str:
     '''Ask the tenant a question, get a response'''
+    # TODO give option to actually pay rent
     return ask_player('Landlord', 'Tenant', message)
 
 
