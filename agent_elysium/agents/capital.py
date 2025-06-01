@@ -10,6 +10,7 @@ class Agents(enum.Enum):
     LANDLORD = "Landlord"
     GROCER = "Grocer"
     BOSS = "Boss"
+    PASTOR = "Pastor"
 
 
 class ChaosResponse(BaseModel):

@@ -1,9 +1,10 @@
-import nest_asyncio
-
-nest_asyncio.apply()
-
-
 import os
+
+if os.getenv("NEST_ASYNCIO"):
+    import nest_asyncio
+
+    nest_asyncio.apply()
+
 import logging
 import random
 from pydantic_ai.settings import ModelSettings
@@ -18,6 +19,7 @@ from .agents.capital import capital_agent
 from .agents.citizen import citizen_agent
 from .agents.land_lord import land_lord_agent
 from .agents.boss import boss_agent
+from .agents.pastor import pastor_agent
 from .agents.cop import cop_agent
 from .agents.robber import robber_agent
 from .state import UserState
@@ -50,33 +52,15 @@ for agent in [
     land_lord_agent,
     robber_agent,
     cop_agent,
+    pastor_agent,
 ]:
     agent.model = model
     agent.model_settings = ModelSettings(timeout=int(os.getenv("API_TIMEOUT", 300)))
 
 
-def run_story(bot=True):
+def run_story(user_state: UserState = None):
     # TODO ask the user for a bio or have one generated
-    user_state = UserState()
-
-    if bot:
-        logging.info("Using citizen bot to simulate gameplay")
-        pending_messages = []
-
-        def print_f(*s):
-            logging.info(s)
-            pending_messages.append(s)
-
-        def input_f(msg: str) -> str:
-            logging.info(msg)
-            all_messages = [*map(str, pending_messages), msg]
-            pending_messages.clear()
-            result = citizen_agent.run_sync("\n".join(all_messages), deps=user_state)
-            logging.info(result.output)
-            return result.output
-
-        PLAYER_INTERACTION.print = print_f
-        PLAYER_INTERACTION.input = input_f
+    user_state = user_state or UserState()
 
     day = 0
     while not user_state.imprisoned:
@@ -103,20 +87,29 @@ def run_story(bot=True):
             if user_state.rent_paid:
                 notify_player("You arrive at your flat.")
             else:
-                notify_player(
-                    "You arrive at your flat. You see your landlord avatar appear on your TV."
-                )
-                if day == 1:
-                    result = land_lord_agent.run_sync(
-                        "We have a new policy of collecting rent on the 1st. Notify the tenant of the change while collecting the rent due.",
-                        deps=user_state,
+                if user_state.rent_cost:
+                    notify_player(
+                        "You arrive at your flat. You see your landlord avatar appear on your TV."
                     )
+                    if day == 1:
+                        result = land_lord_agent.run_sync(
+                            "We have a new policy of collecting rent on the 1st. Notify the tenant of the change while collecting the rent due.",
+                            deps=user_state,
+                        )
+                    else:
+                        result = land_lord_agent.run_sync(
+                            "Collect the rent due from the tenant.",
+                            deps=user_state,
+                        )
+                    logging.info(result.output)
                 else:
-                    result = land_lord_agent.run_sync(
-                        "Collect the rent due from the tenant.",
+                    notify_player(
+                        "You arrive at your flat. You see the pastor approach."
+                    )
+                    result = pastor_agent.run_sync(
+                        "The citizen needs to be encouraged to find work by evicting them from their bed.",
                         deps=user_state,
                     )
-                logging.info(result.output)
 
             leaving = "flat"
 
@@ -141,6 +134,7 @@ def run_story(bot=True):
             "Landlord": land_lord_agent,
             "Grocer": None,
             "Boss": boss_agent,
+            "Pastor": pastor_agent,
         }[agent_name]
 
         if dispatched_agent:
@@ -190,6 +184,29 @@ def run_story(bot=True):
                 logging.info(result.output)
 
     notify_player("You survived {day} day(s) before loosing your freedom.")
+
+
+def run_auto_story():
+    user_state = UserState()
+    logging.info("Using citizen bot to simulate gameplay")
+    pending_messages = []
+
+    def print_f(*s):
+        logging.info(s)
+        pending_messages.append(s)
+
+    def input_f(msg: str) -> str:
+        logging.info(msg)
+        all_messages = [*map(str, pending_messages), msg]
+        pending_messages.clear()
+        result = citizen_agent.run_sync("\n".join(all_messages), deps=user_state)
+        logging.info(result.output)
+        return result.output
+
+    PLAYER_INTERACTION.print = print_f
+    PLAYER_INTERACTION.input = input_f
+
+    run_story(user_state)
 
 
 if __name__ == "__main__":

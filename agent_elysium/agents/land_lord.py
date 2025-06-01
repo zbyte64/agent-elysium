@@ -69,6 +69,8 @@ async def can_afford_rent(ctx: RunContext[UserState]) -> str:
 @land_lord_agent.tool
 async def police(ctx: RunContext[UserState]) -> str:
     """Evict the tenant by calling the police."""
+    if not ctx.deps.warrant:
+        return "[Police Dispatch] The tenant has already been evicted and a warrant is out for their arrest."
     notify_player("The landlord has called the police. You have been evicted.")
     ctx.deps.housed = False
     ctx.deps.warrant = True
@@ -78,6 +80,8 @@ async def police(ctx: RunContext[UserState]) -> str:
 @land_lord_agent.tool
 async def evict(ctx: RunContext[UserState], message: str) -> str:
     """Evict the tenant."""
+    if not ctx.deps.housed:
+        return "[Bank] The tenant has already been evicted."
     notify_player("you are a bum now!")
     ctx.deps.housed = False
     info = tell_player("Landlord", "Tenant", message)

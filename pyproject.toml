@@ -11,6 +11,7 @@ dependencies = [
 
 [project.scripts]
 main_story = "agent_elysium.main:run_story"
+auto_story = "agent_elysium.main:run_auto_story"
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]
