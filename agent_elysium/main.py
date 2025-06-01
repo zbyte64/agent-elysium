@@ -1,6 +1,12 @@
+import nest_asyncio
+
+nest_asyncio.apply()
+
+
 import os
 import logging
 import random
+from pydantic_ai.settings import ModelSettings
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from dotenv import load_dotenv
@@ -36,11 +42,17 @@ model = OpenAIModel(
     ),
 )
 
-boss_agent.model = model
-capital_agent.model = model
-land_lord_agent.model = model
-robber_agent.model = model
-cop_agent.model = model
+
+for agent in [
+    boss_agent,
+    capital_agent,
+    citizen_agent,
+    land_lord_agent,
+    robber_agent,
+    cop_agent,
+]:
+    agent.model = model
+    agent.model_settings = ModelSettings(timeout=int(os.getenv("API_TIMEOUT", 300)))
 
 
 def run_story(bot=True):

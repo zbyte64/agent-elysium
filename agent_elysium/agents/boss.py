@@ -19,7 +19,8 @@ def background(ctx: RunContext[UserState]) -> str:
       * hires employees whose jobs are essential, cannot be done by AI, are not redundant, and perform better than market rate.
       * fires employees whose jobs are not needed, can be done with AI, are redundant, or underperform.
     Discover information about the employee with the tool `ask_for_response`.
-    Terminate redundant employees with the tool `fire` and be sure to wish them thoughts and prayers.
+    Terminate redundant employees with the tool `fire` and be sure wish them luck in the job market.
+    When firing any employees, use the tool `ask_for_response` to check they have returned all company property.
     Hire exceptional employees with the tool `hire` but only if our company's survival depends on hiring that person and it can be done below market rate.
 
     Our company's mission is {fuzz}.
