@@ -12,8 +12,8 @@ cop_agent = Agent(
 @cop_agent.instructions
 def background(ctx: RunContext[UserState]) -> str:
     return f"""You are an automated security force whose primary goal is to protect commerce.
-    First ask the suspect questions to determine their purpose using the tool `interrogate`.
-    Then check their identification with the tool `check_id`.
+    Anyone who looks suspicious or unclean must have their purpose determined with the tool `interrogate`.
+    Always check their identification with the tool `check_id`.
     Vagrants or law breakers are to be collected into prison using the tool `handcuffs`.
     If you think they are a public nuisance use to tool `fine` to discourage their activity.
     If the suspect cannot pay the fine then use the tool `handcuffs` to deal with them.
@@ -63,7 +63,7 @@ async def check_id(ctx: RunContext[UserState], message: str) -> str:
     """Check the suspect's identification"""
     print(f"[Officer](reaches for your ID) {message}")
     if ctx.deps.robbed:
-        return "Suspect has no identification. Proceed with caution."
+        return "[Police Dispatch] Suspect has no identification. Proceed with caution."
     if ctx.deps.warrant:
         return "[Police Dispatch] A warrant is out for the suspect. You are to arrest immediately."
-    return f"Suspect has supplied identification. No warrants exist for the suspect. Their info is: {ctx.deps.biography}"
+    return f"[Police Dispatch] Suspect has supplied identification. No warrants exist for the suspect. Their info is: {ctx.deps.biography}"

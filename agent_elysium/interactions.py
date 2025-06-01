@@ -1,6 +1,7 @@
 from .state import UserState
 
 
+# CONSIDER: would be nice to have an optional agent provide "input", turn into a service?
 def ask_player(actor: str, player_role: str, message: str) -> str:
     print(f"[{actor}] {message}")
     response = input(f"[{player_role}]: ")

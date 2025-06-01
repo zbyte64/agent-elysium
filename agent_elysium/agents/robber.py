@@ -37,10 +37,8 @@ async def mug(ctx: RunContext[UserState], amount: float) -> str:
     if ctx.deps.money < 0:
         notify_player("You've been mugged")
         ctx.deps.robbed = True
-        return (
-            "The customer was unable to pay the full amount but the debt was settled."
-        )
-    return f"The customer paid {amount}"
+        return "[Bank] The customer was unable to pay the full amount but the debt was settled."
+    return f"[Bank] The customer paid {amount}"
 
 
 @robber_agent.tool
@@ -62,5 +60,5 @@ async def message_customer(ctx: RunContext[UserState], message: str) -> str:
 async def check_receipt_status(ctx: RunContext[UserState]) -> str:
     """Check if the customer has paid the toll."""
     if ctx.deps.money > 0:
-        return "The customer still needs to pay more"
-    return "The customer has paid to toll"
+        return "[Bank] The customer still needs to pay more"
+    return "[Bank] The customer has paid to toll"

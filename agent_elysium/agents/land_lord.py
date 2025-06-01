@@ -69,23 +69,24 @@ async def can_afford_rent(ctx: RunContext[UserState]) -> str:
 @land_lord_agent.tool
 async def police(ctx: RunContext[UserState]) -> str:
     """Evict the tenant by calling the police."""
-    notify_player("The landlord has called the police")
+    notify_player("The landlord has called the police. You have been evicted.")
     ctx.deps.housed = False
     ctx.deps.warrant = True
-    return "The tenant has been evicted. The police will collect the tenant."
+    return "[Bank] The tenant has been evicted. The police will collect the tenant."
 
 
 @land_lord_agent.tool
-async def evict(ctx: RunContext[UserState]) -> str:
+async def evict(ctx: RunContext[UserState], message: str) -> str:
     """Evict the tenant."""
     notify_player("you are a bum now!")
     ctx.deps.housed = False
-    return "The tenant has been evicted."
+    info = tell_player("Landlord", "Tenant", message)
+    return info + "\n[Bank] The tenant has been evicted."
 
 
 @land_lord_agent.tool
 async def check_rent_status(ctx: RunContext[UserState]) -> str:
     """Check if the tenant owes rent."""
     if ctx.deps.rent_paid:
-        return "The tenant has paid their rent"
-    return "The tenant owes rent"
+        return "[Bank] The tenant has paid their rent"
+    return "[Bank] The tenant owes rent"
