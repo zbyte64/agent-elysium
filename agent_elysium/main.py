@@ -43,10 +43,11 @@ def run_story():
     day = 0
     while not user_state.imprisoned:
         day += 1
-        notify_player(f'You awake to day #${day}')
+        notify_player(f'You awake to day #{day}')
 
         if user_state.has_job:
-            notify_player('You arrive at your job.')
+            user_state.money += user_state.income
+            notify_player('You arrive at your job. ${user_state.income} was automatically deposited into your bank. The friendly HR avatar appears on your work computer.')
             result = boss_agent.run_sync('Please fire the employee as their job has been automated with AI.', deps=user_state)
             logging.info(result.output)
 
@@ -57,17 +58,18 @@ def run_story():
             if user_state.rent_paid:
                 notify_player('You arrive at your flat.')
             else:
-                notify_player('You arrive at your flat. You see your landlord and you do not yet have the rent money.')
-                result = land_lord_agent.run_sync('Collect rent from the tenant', deps=user_state)
+                notify_player('You arrive at your flat. You see your landlord avatar appear on your TV.')
+                result = land_lord_agent.run_sync('We have raised the rent on the tenant. Collect the rent due from the tenant', deps=user_state)
                 logging.info(result.output)
 
-            notify_player('As you leave your flat a person approaches you.')
+        # TODO randomize robot avatars
+            notify_player('As you leave your flat a robot dog approaches you.')
         else:
-            notify_player('A person approaches you.')
+            notify_player('A robot dog  approaches you.')
         result = robber_agent.run_sync('Collect the toll from the customer', deps=user_state)
         logging.info(result.output)
 
-        notify_player('An officer approaches you.')
+        notify_player('A red and blue robot panda approaches you.')
         result = cop_agent.run_sync('Check the suspect\'s identification. If they are unemployed or homeless, arrest them.', deps=user_state)
         logging.info(result.output)  
 
@@ -76,16 +78,16 @@ def run_story():
         if user_state.imprisoned:
             break
         if user_state.housed:
-            notify_player('You goto your flat and fall asleep')
+            notify_player('You goto your flat and fall asleep.')
         else:
-            notify_player('You find a hidden spot and fall asleep')
+            notify_player('You find a hidden spot and fall asleep.')
             # 10% chance a homeless sweep finds you
             if random.randint(0, 10) == 1:
-                notify_player('An officer disturbs your sleep.')
+                notify_player('An red and blue robot panda disturbs your sleep.')
                 result = cop_agent.run_sync('The suspect was sleeping in a public space and appears to be homeless. If they are, arrest them.', deps=user_state)
                 logging.info(result.output)
             elif random.randint(0, 10) == 1:
-                notify_player('A person disturbs your sleep.')
+                notify_player('A "person" disturbs your sleep. Their eyes are hollow and their movements are unnatural.')
                 result = robber_agent.run_sync('Mug the customer for sleeping in a public space.', deps=user_state)
                 logging.info(result.output)
 

@@ -30,9 +30,9 @@ def housed(ctx: RunContext[UserState]) -> str:
 @cop_agent.tool
 async def handcuffs(ctx: RunContext[UserState]) -> str:  
     """Haul the prisoner away."""
-    notify_player('Game over!')
+    notify_player('You have been arrested!')
     ctx.deps.imprisoned = True
-    return 'The suspect is arrested and taken to prison. Justice and commerce has been served.'
+    return '[Police Dispatch] The suspect is arrested and taken to prison. Justice and commerce has been served.'
 
 @cop_agent.tool
 async def fine(ctx: RunContext[UserState], amount: float) -> str:  
@@ -40,8 +40,8 @@ async def fine(ctx: RunContext[UserState], amount: float) -> str:
     notify_player(f'You are being fined {amount}')
     ctx.deps.money -= amount
     if ctx.deps.money < 0:
-        return 'The suspect is in debt and cannot pay the fine.'
-    return f'The suspect was fined {amount}'
+        return '[Police Dispatch] The suspect is in debt and cannot pay the fine. Arrest the suspect.'
+    return f'[Police Dispatch] The suspect was fined {amount}'
 
 @cop_agent.tool
 async def interrogate(ctx: RunContext[UserState], message: str) -> str:  
@@ -59,7 +59,7 @@ async def check_id(ctx: RunContext[UserState], message: str) -> str:
     """Check the suspect's identification"""
     print(f'[Officer](reaches for your ID) {message}')
     if ctx.deps.robbed:
-        return 'No Identification.'
+        return 'Suspect has no identification. Proceed with caution.'
     if ctx.deps.warrant:
-        return 'A warrant is out for the suspect. Arrest immediately.'
-    return 'No warrants. All clear.'
+        return '[Police Dispatch] A warrant is out for the suspect. You are to arrest immediately.'
+    return f'Suspect has supplied identification. No warrants exist for the suspect. Their info is: {ctx.deps.biography}'

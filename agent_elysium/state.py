@@ -2,8 +2,9 @@ from pydantic import BaseModel
 
 
 class UserState(BaseModel):
+    biography: str = 'A citizen'
     money: float = 10
-    income: float = 5000
+    income: float = 1000
     rent_cost: float = 2000
     rent_paid: bool = False
     has_job: bool = True
