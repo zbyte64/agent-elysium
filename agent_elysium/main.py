@@ -9,12 +9,13 @@ from agent_elysium.robot_forms import COMMON_ROBOTS
 
 
 from .agents.capital import capital_agent
+from .agents.citizen import citizen_agent
 from .agents.land_lord import land_lord_agent
 from .agents.boss import boss_agent
 from .agents.cop import cop_agent
 from .agents.robber import robber_agent
 from .state import UserState
-from .interactions import notify_player
+from .interactions import notify_player, PLAYER_INTERACTION
 
 
 load_dotenv()
@@ -42,9 +43,28 @@ robber_agent.model = model
 cop_agent.model = model
 
 
-def run_story():
+def run_story(bot=True):
     # TODO ask the user for a bio or have one generated
     user_state = UserState()
+
+    if bot:
+        logging.info("Using citizen bot to simulate gameplay")
+        pending_messages = []
+
+        def print_f(*s):
+            logging.info(s)
+            pending_messages.append(s)
+
+        def input_f(msg: str) -> str:
+            logging.info(msg)
+            all_messages = [*map(str, pending_messages), msg]
+            pending_messages.clear()
+            result = citizen_agent.run_sync("\n".join(all_messages), deps=user_state)
+            logging.info(result.output)
+            return result.output
+
+        PLAYER_INTERACTION.print = print_f
+        PLAYER_INTERACTION.input = input_f
 
     day = 0
     while not user_state.imprisoned:
