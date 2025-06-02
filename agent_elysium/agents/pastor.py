@@ -32,7 +32,7 @@ def background(ctx: RunContext[UserState]) -> str:
 @pastor_agent.tool
 async def ask_for_response(ctx: RunContext[UserState], message: str) -> str:
     """Ask the citizen a question, get a response from the citizen."""
-    return ask_player("Pastor", "Citizen", message)
+    return await ask_player("Pastor", "Citizen", message)
 
 
 @pastor_agent.tool
@@ -46,7 +46,9 @@ async def ask_for_donation(
     ctx: RunContext[UserState], message: str, amount: float
 ) -> str:
     """Ask the citizen for a donation, get a response from the customer."""
-    paid, response = ask_player_for_payment(ctx, "Pastor", "Citizen", message, amount)
+    paid, response = await ask_player_for_payment(
+        ctx.deps, "Pastor", "Citizen", message, amount
+    )
     return response
 
 

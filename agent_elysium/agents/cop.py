@@ -49,7 +49,7 @@ async def fine(ctx: RunContext[UserState], amount: float) -> str:
 @cop_agent.tool
 async def interrogate(ctx: RunContext[UserState], message: str) -> str:
     """Ask the suspect a question, get a response from the suspect."""
-    return ask_player("Officer", "Suspect", message)
+    return await ask_player("Officer", "Suspect", message)
 
 
 @cop_agent.tool

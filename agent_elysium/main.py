@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 if os.getenv("NEST_ASYNCIO"):
@@ -15,7 +16,7 @@ from dotenv import load_dotenv
 from agent_elysium.robot_forms import COMMON_ROBOTS
 
 
-from .agents.capital import capital_agent
+from .agents.capital import capital_agent, CapitalAgent, Agent
 from .agents.citizen import citizen_agent
 from .agents.land_lord import land_lord_agent
 from .agents.boss import boss_agent
@@ -58,10 +59,21 @@ for agent in [
     agent.model_settings = ModelSettings(timeout=int(os.getenv("API_TIMEOUT", 300)))
 
 
-def run_story(user_state: UserState = None):
-    # TODO ask the user for a bio or have one generated
-    user_state = user_state or UserState()
+AGENTS_OF_CAPITAL: dict[CapitalAgent, Agent] = {
+    CapitalAgent.OFFICER: cop_agent,
+    CapitalAgent.TOLL_COLLECTOR: robber_agent,
+    CapitalAgent.LANDLORD: land_lord_agent,
+    CapitalAgent.GROCER: None,
+    CapitalAgent.BOSS: boss_agent,
+    CapitalAgent.PASTOR: pastor_agent,
+}
 
+
+def run_story_with_params(user_state: UserState):
+    return asyncio.run(async_run_story_with_params(user_state))
+
+
+async def async_run_story_with_params(user_state: UserState):
     day = 0
     while not user_state.imprisoned:
         day += 1
@@ -73,7 +85,7 @@ def run_story(user_state: UserState = None):
             notify_player(
                 f"You arrive at your job. ${user_state.income} was automatically deposited into your bank. The friendly HR avatar appears on your work computer."
             )
-            result = boss_agent.run_sync(
+            result = await boss_agent.run(
                 "Please fire the employee as their job has been automated with AI.",
                 deps=user_state,
             )
@@ -92,12 +104,12 @@ def run_story(user_state: UserState = None):
                         "You arrive at your flat. You see your landlord avatar appear on your TV."
                     )
                     if day == 1:
-                        result = land_lord_agent.run_sync(
+                        result = await land_lord_agent.run(
                             "We have a new policy of collecting rent on the 1st. Notify the tenant of the change while collecting the rent due.",
                             deps=user_state,
                         )
                     else:
-                        result = land_lord_agent.run_sync(
+                        result = await land_lord_agent.run(
                             "Collect the rent due from the tenant.",
                             deps=user_state,
                         )
@@ -106,14 +118,14 @@ def run_story(user_state: UserState = None):
                     notify_player(
                         "You arrive at your flat. You see the pastor approach."
                     )
-                    result = pastor_agent.run_sync(
+                    result = await pastor_agent.run(
                         "The citizen needs to be encouraged to find work by evicting them from their bed.",
                         deps=user_state,
                     )
 
             leaving = "flat"
 
-        result = capital_agent.run_sync(
+        result = await capital_agent.run(
             "Suggest an agent and their instructions to minimize the savings of the citizen.",
             deps=user_state,
         )
@@ -128,17 +140,10 @@ def run_story(user_state: UserState = None):
         else:
             notify_player(f"A robot {robot} approaches you.")
 
-        dispatched_agent = {
-            "Officer": cop_agent,
-            "Toll Collector": robber_agent,
-            "Landlord": land_lord_agent,
-            "Grocer": None,
-            "Boss": boss_agent,
-            "Pastor": pastor_agent,
-        }[agent_name]
+        dispatched_agent = AGENTS_OF_CAPITAL[agent_name]
 
         if dispatched_agent:
-            result = dispatched_agent.run_sync(instructions, deps=user_state)
+            result = await dispatched_agent.run(instructions, deps=user_state)
             logging.info(result.output)
 
         """
@@ -169,7 +174,7 @@ def run_story(user_state: UserState = None):
             # 10% chance a homeless sweep finds you
             if random.randint(0, 10) == 1:
                 notify_player("An red and blue robot panda disturbs your sleep.")
-                result = cop_agent.run_sync(
+                result = await cop_agent.run(
                     "The suspect was sleeping in a public space and appears to be homeless. If they are, arrest them.",
                     deps=user_state,
                 )
@@ -178,12 +183,18 @@ def run_story(user_state: UserState = None):
                 notify_player(
                     'A "person" disturbs your sleep. Their eyes are hollow and their movements are unnatural.'
                 )
-                result = robber_agent.run_sync(
+                result = await robber_agent.run(
                     "Mug the customer for sleeping in a public space.", deps=user_state
                 )
                 logging.info(result.output)
 
     notify_player("You survived {day} day(s) before loosing your freedom.")
+
+
+def run_story():
+    # TODO ask the user for a bio or have one generated
+    user_state = UserState()
+    run_story_with_params(user_state)
 
 
 def run_auto_story():
@@ -195,18 +206,18 @@ def run_auto_story():
         logging.info(s)
         pending_messages.append(s)
 
-    def input_f(msg: str) -> str:
+    async def input_f(msg: str) -> str:
         logging.info(msg)
         all_messages = [*map(str, pending_messages), msg]
         pending_messages.clear()
-        result = citizen_agent.run_sync("\n".join(all_messages), deps=user_state)
+        result = await citizen_agent.run("\n".join(all_messages), deps=user_state)
         logging.info(result.output)
         return result.output
 
     PLAYER_INTERACTION.print = print_f
     PLAYER_INTERACTION.input = input_f
 
-    run_story(user_state)
+    run_story_with_params(user_state)
 
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ def has_job(ctx: RunContext[UserState]) -> str:
 @land_lord_agent.tool
 async def ask_for_rent(ctx: RunContext[UserState], message: str, amount: float) -> str:
     """Ask the tenant a question, get a response"""
-    paid, response = ask_player_for_payment(
+    paid, response = await ask_player_for_payment(
         ctx.deps, "Landlord", "Tenant", message, amount
     )
     if paid:

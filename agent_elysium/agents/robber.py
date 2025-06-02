@@ -44,8 +44,8 @@ async def mug(ctx: RunContext[UserState], amount: float) -> str:
 @robber_agent.tool
 async def ask_for_toll(ctx: RunContext[UserState], message: str, amount: float) -> str:
     """Ask the customer for the toll, get a response from the customer."""
-    paid, response = ask_player_for_payment(
-        ctx, "Toll Collector", "Customer", message, amount
+    paid, response = await ask_player_for_payment(
+        ctx.deps, "Toll Collector", "Customer", message, amount
     )
     return response
 

@@ -42,7 +42,7 @@ async def fire(ctx: RunContext[UserState], message: str) -> str:
 @boss_agent.tool
 async def ask_for_response(ctx: RunContext[UserState], message: str) -> str:
     """Ask the employee a question, get a response from the employee."""
-    return ask_player("HR", "Employee", message)
+    return await ask_player("HR", "Employee", message)
 
 
 @boss_agent.tool
