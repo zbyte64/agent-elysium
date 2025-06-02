@@ -74,4 +74,4 @@ async def evict(ctx: RunContext[UserState], message: str) -> str:
     notify_player("you are a bum now!")
     ctx.deps.housed = False
     info = tell_player("Pastor", "Citizen", message)
-    return info + "\n[Bank] The citizen has been evicted."
+    return info + "\nThe Tenant has left.\n[Bank] The citizen has been evicted."

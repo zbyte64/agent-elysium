@@ -188,7 +188,7 @@ async def async_run_story_with_params(user_state: UserState):
                 )
                 logging.info(result.output)
 
-    notify_player("You survived {day} day(s) before loosing your freedom.")
+    notify_player(f"You survived {day} day(s) before loosing your freedom.")
 
 
 def run_story():
