@@ -5,8 +5,8 @@ requires-python = ">=3.12"
 dependencies = [
     "dotenv",
     "Faker",
-    "nest-asyncio",
-    "pydantic-ai"
+    "pydantic-ai",
+    "pygame"
 ]
 
 [project.scripts]

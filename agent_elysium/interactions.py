@@ -14,6 +14,10 @@ class PlayerInteraction(object):
         self.input = input_f
         self.print = print_f
 
+    def set_interface(self, input_f, print_f):
+        self.input = input_f
+        self.print_f = print_f
+
     # CONSIDER: would be nice to have an optional agent provide "input", turn into a service?
     async def ask_player(self, actor: str, player_role: str, message: str) -> str:
         self.print(f"[{actor}] {message}")

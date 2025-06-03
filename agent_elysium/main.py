@@ -1,11 +1,5 @@
 import asyncio
 import os
-
-if os.getenv("NEST_ASYNCIO"):
-    import nest_asyncio
-
-    nest_asyncio.apply()
-
 import logging
 import random
 from pydantic_ai.settings import ModelSettings
@@ -25,6 +19,7 @@ from .agents.cop import cop_agent
 from .agents.robber import robber_agent
 from .state import UserState
 from .interactions import notify_player, PLAYER_INTERACTION
+from .game_interfaces import auto
 
 
 load_dotenv()
@@ -200,23 +195,7 @@ def run_story():
 def run_auto_story():
     user_state = UserState()
     logging.info("Using citizen bot to simulate gameplay")
-    pending_messages = []
-
-    def print_f(*s):
-        logging.info(s)
-        pending_messages.append(s)
-
-    async def input_f(msg: str) -> str:
-        logging.info(msg)
-        all_messages = [*map(str, pending_messages), msg]
-        pending_messages.clear()
-        result = await citizen_agent.run("\n".join(all_messages), deps=user_state)
-        logging.info(result.output)
-        return result.output
-
-    PLAYER_INTERACTION.print = print_f
-    PLAYER_INTERACTION.input = input_f
-
+    PLAYER_INTERACTION.set_interface(**auto.setup(user_state=user_state))
     run_story_with_params(user_state)
 
 
