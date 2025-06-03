@@ -76,7 +76,7 @@ async def police(ctx: RunContext[UserState]) -> str:
     notify_player("The landlord has called the police. You have been evicted.")
     ctx.deps.housed = False
     ctx.deps.warrant = True
-    return "The tenant has left.\n[Bank] The tenant has been evicted.\n[Police Dispatch] The police will collect the tenant."
+    return "[Tenant] I am leaving.\nThe tenant has left."
 
 
 @land_lord_agent.tool
@@ -87,7 +87,7 @@ async def evict(ctx: RunContext[UserState], message: str) -> str:
     notify_player("you are a bum now!")
     ctx.deps.housed = False
     info = tell_player("Landlord", "Tenant", message)
-    return info + "\nThe Tenant has left.\n[Bank] The tenant has been evicted."
+    return info + "\n[Tenant] I am leaving.\nThe Tenant has left."
 
 
 @land_lord_agent.tool

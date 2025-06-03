@@ -50,8 +50,9 @@ async def arrive(user_state: UserState, leaving: str):
             result = await dispatched_agent.run(instructions, deps=user_state)
             logging.info(result.output)
     else:
-        agent_name = random.choice(AGENTS_OF_CAPITAL.keys())
-        dispatched_agent, default_prompt = AGENTS_OF_CAPITAL[agent_name]
+        agent_name, (dispatched_agent, default_prompt) = random.choice(
+            list(AGENTS_OF_CAPITAL.items())
+        )
 
         match agent_name:
             case CapitalAgent.OFFICER:
@@ -60,5 +61,5 @@ async def arrive(user_state: UserState, leaving: str):
                 robot = random.choice(COMMON_ROBOTS)
                 notify_player(f"A robot {robot} approaches you.")
 
-        result = await agents.dispatched_agent.run(default_prompt, deps=user_state)
+        result = await dispatched_agent.run(default_prompt, deps=user_state)
         logging.info(result.output)

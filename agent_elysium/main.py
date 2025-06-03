@@ -6,20 +6,7 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from dotenv import load_dotenv
 
-from .agents.capital import capital_agent
-from .agents.citizen import citizen_agent
-from .agents.land_lord import land_lord_agent
-from .agents.boss import boss_agent
-from .agents.pastor import pastor_agent
-from .agents.cop import cop_agent
-from .agents.robber import robber_agent
-from .scenes import (
-    job_working,
-    flat_sleeping,
-    shelter_sleeping,
-    sidewalk_sleeping,
-    sidewalk_traveling,
-)
+from . import agents, scenes, user_traveling
 from .state import UserState
 from .interactions import notify_player, PLAYER_INTERACTION
 from .game_interfaces import auto
@@ -44,15 +31,10 @@ model = OpenAIModel(
 )
 
 
-for agent in [
-    boss_agent,
-    capital_agent,
-    citizen_agent,
-    land_lord_agent,
-    robber_agent,
-    cop_agent,
-    pastor_agent,
-]:
+for agent_name in dir(agents):
+    if not agent_name.endswith("_agent"):
+        continue
+    agent = getattr(agents, agent_name)
     agent.model = model
     agent.model_settings = ModelSettings(timeout=int(os.getenv("API_TIMEOUT", 300)))
 
@@ -67,26 +49,21 @@ async def async_run_story_with_params(user_state: UserState):
         leaving = None
         if user_state.housed:
             if user_state.rent_cost:
-                await flat_sleeping.arrive(user_state=user_state)
+                await scenes.flat_sleeping.arrive(user_state=user_state)
                 leaving = "flat"
             else:
-                await shelter_sleeping.arrive(user_state=user_state)
+                await scenes.shelter_sleeping.arrive(user_state=user_state)
                 leaving = "shelter"
         else:
-            await sidewalk_sleeping.arrive(user_state=user_state)
+            await scenes.sidewalk_sleeping.arrive(user_state=user_state)
             leaving = "sidewalk"
 
         if user_state.has_job:
-            await job_working.arrive(user_state)
+            await scenes.job_working.arrive(user_state)
             leaving = "job"
 
-        await sidewalk_traveling.arrive(user_state, leaving)
-
-        # TODO food interactions?
-        # Does the user get to navigate the world? Try to get a job?
-        # Maybe here they actually talk to a "DM", but that would be too much power
-        # A better message would be an option to create "real" art that introduces "memes" into the space that influences the AI
-        # but that is too much power as well, more direct prompt injection when "real" genAI doesn't care
+        # ask user for destination
+        await user_traveling.arrive(user_state, leaving)
 
     notify_player(f"You survived {user_state.day} day(s) before loosing your freedom.")
 
