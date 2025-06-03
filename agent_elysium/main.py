@@ -1,23 +1,25 @@
 import asyncio
 import os
 import logging
-import random
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from dotenv import load_dotenv
 
-from agent_elysium.robot_forms import COMMON_ROBOTS
-
-
-from .agents.capital import capital_agent, CapitalAgent, Agent
+from .agents.capital import capital_agent
 from .agents.citizen import citizen_agent
 from .agents.land_lord import land_lord_agent
 from .agents.boss import boss_agent
 from .agents.pastor import pastor_agent
 from .agents.cop import cop_agent
 from .agents.robber import robber_agent
-from .scenes import job_working, flat_sleeping, shelter_sleeping, sidewalk_sleeping
+from .scenes import (
+    job_working,
+    flat_sleeping,
+    shelter_sleeping,
+    sidewalk_sleeping,
+    sidewalk_traveling,
+)
 from .state import UserState
 from .interactions import notify_player, PLAYER_INTERACTION
 from .game_interfaces import auto
@@ -55,16 +57,6 @@ for agent in [
     agent.model_settings = ModelSettings(timeout=int(os.getenv("API_TIMEOUT", 300)))
 
 
-AGENTS_OF_CAPITAL: dict[CapitalAgent, Agent] = {
-    CapitalAgent.OFFICER: cop_agent,
-    CapitalAgent.TOLL_COLLECTOR: robber_agent,
-    CapitalAgent.LANDLORD: land_lord_agent,
-    CapitalAgent.GROCER: None,
-    CapitalAgent.BOSS: boss_agent,
-    CapitalAgent.PASTOR: pastor_agent,
-}
-
-
 def run_story_with_params(user_state: UserState):
     return asyncio.run(async_run_story_with_params(user_state))
 
@@ -88,43 +80,7 @@ async def async_run_story_with_params(user_state: UserState):
             await job_working.arrive(user_state)
             leaving = "job"
 
-        # ramdom encounter time
-        # random.choice(AGENTS_OF_CAPITAL)
-
-        result = await capital_agent.run(
-            "Suggest an agent and their instructions to minimize the savings of the citizen.",
-            deps=user_state,
-        )
-        logging.info(result.output)
-        agent_name, instructions = result.output.agent, result.output.instructions
-        robot = random.choice(COMMON_ROBOTS)
-
-        if leaving:
-            notify_player(
-                f"As you leave your {leaving} a robot {robot} approaches you."
-            )
-        else:
-            notify_player(f"A robot {robot} approaches you.")
-
-        dispatched_agent = AGENTS_OF_CAPITAL[agent_name]
-
-        if dispatched_agent:
-            result = await dispatched_agent.run(instructions, deps=user_state)
-            logging.info(result.output)
-
-        """
-        result = dispatched_agent.run_sync(
-            "Collect the toll from the customer", deps=user_state
-        )
-        logging.info(result.output)
-
-        notify_player("A red and blue robot panda approaches you.")
-        result = cop_agent.run_sync(
-            "Check the suspect's identification. If they are unemployed or homeless, arrest them.",
-            deps=user_state,
-        )
-        logging.info(result.output)
-        """
+        await sidewalk_traveling.arrive(user_state, leaving)
 
         # TODO food interactions?
         # Does the user get to navigate the world? Try to get a job?

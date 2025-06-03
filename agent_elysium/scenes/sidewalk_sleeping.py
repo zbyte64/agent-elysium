@@ -2,8 +2,7 @@ import logging
 import random
 
 from agent_elysium.state import UserState
-from agent_elysium.agents.cop import cop_agent
-from agent_elysium.agents.robber import robber_agent
+from agent_elysium.agents import cop_agent, robber_agent
 from agent_elysium.interactions import notify_player
 
 
