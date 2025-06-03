@@ -17,6 +17,7 @@ from .agents.boss import boss_agent
 from .agents.pastor import pastor_agent
 from .agents.cop import cop_agent
 from .agents.robber import robber_agent
+from .scenes import job_working, flat_sleeping, shelter_sleeping, sidewalk_sleeping
 from .state import UserState
 from .interactions import notify_player, PLAYER_INTERACTION
 from .game_interfaces import auto
@@ -69,56 +70,26 @@ def run_story_with_params(user_state: UserState):
 
 
 async def async_run_story_with_params(user_state: UserState):
-    day = 0
     while not user_state.imprisoned:
-        day += 1
-        notify_player(f"You awake to day #{day}")
-
+        user_state.day += 1
         leaving = None
+        if user_state.housed:
+            if user_state.rent_cost:
+                await flat_sleeping.arrive(user_state=user_state)
+                leaving = "flat"
+            else:
+                await shelter_sleeping.arrive(user_state=user_state)
+                leaving = "shelter"
+        else:
+            await sidewalk_sleeping.arrive(user_state=user_state)
+            leaving = "sidewalk"
+
         if user_state.has_job:
-            user_state.money += user_state.income
-            notify_player(
-                f"You arrive at your job. ${user_state.income} was automatically deposited into your bank. The friendly HR avatar appears on your work computer."
-            )
-            result = await boss_agent.run(
-                "Please fire the employee as their job has been automated with AI.",
-                deps=user_state,
-            )
-            logging.info(result.output)
+            await job_working.arrive(user_state)
             leaving = "job"
 
-        if user_state.housed:
-            # rent is collected every 5 days
-            if user_state.rent_paid:
-                user_state.rent_paid = (day % 5) != 0
-            if user_state.rent_paid:
-                notify_player("You arrive at your flat.")
-            else:
-                if user_state.rent_cost:
-                    notify_player(
-                        "You arrive at your flat. You see your landlord avatar appear on your TV."
-                    )
-                    if day == 1:
-                        result = await land_lord_agent.run(
-                            "We have a new policy of collecting rent on the 1st. Notify the tenant of the change while collecting the rent due.",
-                            deps=user_state,
-                        )
-                    else:
-                        result = await land_lord_agent.run(
-                            "Collect the rent due from the tenant.",
-                            deps=user_state,
-                        )
-                    logging.info(result.output)
-                else:
-                    notify_player(
-                        "You arrive at your flat. You see the pastor approach."
-                    )
-                    result = await pastor_agent.run(
-                        "The citizen needs to be encouraged to find work by evicting them from their bed.",
-                        deps=user_state,
-                    )
-
-            leaving = "flat"
+        # ramdom encounter time
+        # random.choice(AGENTS_OF_CAPITAL)
 
         result = await capital_agent.run(
             "Suggest an agent and their instructions to minimize the savings of the citizen.",
@@ -160,30 +131,8 @@ async def async_run_story_with_params(user_state: UserState):
         # Maybe here they actually talk to a "DM", but that would be too much power
         # A better message would be an option to create "real" art that introduces "memes" into the space that influences the AI
         # but that is too much power as well, more direct prompt injection when "real" genAI doesn't care
-        if user_state.imprisoned:
-            break
-        if user_state.housed:
-            notify_player("You goto your flat and fall asleep.")
-        else:
-            notify_player("You find a hidden spot and fall asleep.")
-            # 10% chance a homeless sweep finds you
-            if random.randint(0, 10) == 1:
-                notify_player("An red and blue robot panda disturbs your sleep.")
-                result = await cop_agent.run(
-                    "The suspect was sleeping in a public space and appears to be homeless. If they are, arrest them.",
-                    deps=user_state,
-                )
-                logging.info(result.output)
-            elif random.randint(0, 10) == 1:
-                notify_player(
-                    'A "person" disturbs your sleep. Their eyes are hollow and their movements are unnatural.'
-                )
-                result = await robber_agent.run(
-                    "Mug the customer for sleeping in a public space.", deps=user_state
-                )
-                logging.info(result.output)
 
-    notify_player(f"You survived {day} day(s) before loosing your freedom.")
+    notify_player(f"You survived {user_state.day} day(s) before loosing your freedom.")
 
 
 def run_story():
@@ -195,7 +144,7 @@ def run_story():
 def run_auto_story():
     user_state = UserState()
     logging.info("Using citizen bot to simulate gameplay")
-    PLAYER_INTERACTION.set_interface(**auto.setup(user_state=user_state))
+    PLAYER_INTERACTION.set_interface(**auto.interaction_params(user_state=user_state))
     run_story_with_params(user_state)
 
 
