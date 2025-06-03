@@ -18,7 +18,7 @@ async def arrive(user_state: UserState):
         )
         if user_state.day == 1:
             result = await land_lord_agent.run(
-                "We have a new policy of collecting rent on the 1st. Notify the tenant of the change while collecting the rent due.",
+                "We have a new policy of collecting rent on the 1st. Explain to the tenant this is why we are collecting their due rent early.",
                 deps=user_state,
             )
         else:

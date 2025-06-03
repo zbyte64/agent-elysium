@@ -6,23 +6,29 @@ from pydantic_ai import Agent
 from agent_elysium.agents.capital import CapitalAgent
 from agent_elysium.robot_forms import COMMON_ROBOTS
 from agent_elysium.state import UserState
-from agent_elysium.agents import capital_agent, cop_agent
+from agent_elysium.agents import capital_agent
 from agent_elysium import agents
 from agent_elysium.interactions import notify_player
 
 
-AGENTS_OF_CAPITAL: dict[CapitalAgent, Agent] = {
-    CapitalAgent.OFFICER: agents.cop_agent,
-    CapitalAgent.TOLL_COLLECTOR: agents.robber_agent,
-    CapitalAgent.LANDLORD: agents.land_lord_agent,
-    CapitalAgent.GROCER: None,
-    CapitalAgent.BOSS: agents.boss_agent,
-    CapitalAgent.PASTOR: agents.pastor_agent,
+AGENTS_OF_CAPITAL: dict[CapitalAgent, tuple[Agent, str]] = {
+    CapitalAgent.OFFICER: (
+        agents.cop_agent,
+        "Check the suspect's identification. If they are unemployed or homeless, arrest them.",
+    ),
+    CapitalAgent.TOLL_COLLECTOR: (
+        agents.robber_agent,
+        "Collect the toll from the customer",
+    ),
+    # CapitalAgent.LANDLORD: agents.land_lord_agent,
+    # CapitalAgent.GROCER: None,
+    # CapitalAgent.BOSS: agents.boss_agent,
+    CapitalAgent.PASTOR: (agents.pastor_agent, "Preach your faith to the citizen."),
 }
 
 
 async def arrive(user_state: UserState, leaving: str):
-    if user_state.days > 10:
+    if user_state.day > 10:
         result = await capital_agent.run(
             "Suggest an agent and their instructions to minimize the savings of the citizen.",
             deps=user_state,
@@ -38,23 +44,21 @@ async def arrive(user_state: UserState, leaving: str):
         else:
             notify_player(f"A robot {robot} approaches you.")
 
-        dispatched_agent = AGENTS_OF_CAPITAL[agent_name]
+        dispatched_agent, default_prompt = AGENTS_OF_CAPITAL[agent_name]
 
         if dispatched_agent:
             result = await dispatched_agent.run(instructions, deps=user_state)
             logging.info(result.output)
     else:
-        # TODO randomize
-        # ramdom encounter time
-        # random.choice(AGENTS_OF_CAPITAL)
-        result = dispatched_agent.run_sync(
-            "Collect the toll from the customer", deps=user_state
-        )
-        logging.info(result.output)
+        agent_name = random.choice(AGENTS_OF_CAPITAL.keys())
+        dispatched_agent, default_prompt = AGENTS_OF_CAPITAL[agent_name]
 
-        notify_player("A red and blue robot panda approaches you.")
-        result = cop_agent.run_sync(
-            "Check the suspect's identification. If they are unemployed or homeless, arrest them.",
-            deps=user_state,
-        )
+        match agent_name:
+            case CapitalAgent.OFFICER:
+                notify_player("A red and blue robot panda approaches you.")
+            case _:
+                robot = random.choice(COMMON_ROBOTS)
+                notify_player(f"A robot {robot} approaches you.")
+
+        result = await agents.dispatched_agent.run(default_prompt, deps=user_state)
         logging.info(result.output)
