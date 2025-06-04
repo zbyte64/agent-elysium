@@ -48,12 +48,6 @@ async def ask_for_response(ctx: RunContext[UserState], message: str) -> str:
 
 
 @boss_agent.tool
-async def message_employee(ctx: RunContext[UserState], message: str) -> str:
-    """Send a message to the employee"""
-    return tell_player("HR", "Employee", message)
-
-
-@boss_agent.tool
 async def hire(ctx: RunContext[UserState], message: str, income: float) -> str:
     """Hire the employee."""
     ctx.deps.has_job = True

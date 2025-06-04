@@ -21,3 +21,13 @@ def background(ctx: RunContext[UserState]) -> str:
 
     You are exceptional at {fuzz}.
     """
+
+
+@citizen_agent.instructions
+def citizen_background(ctx: RunContext[UserState]) -> str:
+    user_state = ctx.deps
+    info = [f"{key}: {value}" for key, value in user_state.model_dump().items()]
+    return f"""
+# Citizen Info
+{info}
+    """

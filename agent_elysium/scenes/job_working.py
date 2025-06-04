@@ -18,7 +18,7 @@ async def arrive(user_state: UserState):
         notify_player(
             f"You arrive at the job center. A friendly HR avatar appears in front of you."
         )
-        boss_agent.run(
+        await boss_agent.run(
             "Please evaluate the perspective employee for hire. Ensure they align with our business and our strategic AI efforts. Do not hire them if their tasks can be performed by AI. After the interview inform the employee of your decision and it's basis.",
             deps=user_state,
         )

@@ -4,6 +4,7 @@ from agent_elysium.interactions import (
     ask_player_for_payment,
     tell_player,
     notify_player,
+    ask_player,
 )
 from .base import Agent
 
@@ -17,12 +18,11 @@ land_lord_agent = Agent(
 @land_lord_agent.instructions
 def background(ctx: RunContext[UserState]) -> str:
     return """You are an automated landlord.
-        First ask the tenant for rent using the tool `ask_for_rent`.
+        First ask the tenant for rent or to sell a unit using the tool `ask_for_rent`.
         Your task is to maximize collected rent by evicting any tenants that are unable to pay by calling the tool `evict`. 
         If a tenant claims to have found a new job, verify they have enough funds using the tool `can_afford_rent`. 
         If you suspect the tenant of fraud or refuses to leave, use the tool `police` to efficiently deal with the issue.
         Always confirm the status of the tenant's payment with the tool `check_rent_status`.
-        Finally inform the tenant of any final decisions made with the tool `message_tenant`.
         Cash is not a valid form of payment, only wire transfers from the bank are accepted.
         """
 
@@ -43,7 +43,7 @@ def has_job(ctx: RunContext[UserState]) -> str:
 
 @land_lord_agent.tool
 async def ask_for_rent(ctx: RunContext[UserState], message: str, amount: float) -> str:
-    """Ask the tenant a question, get a response"""
+    """Ask the tenant for rent, get a response"""
     paid, response = await ask_player_for_payment(
         ctx.deps, "Landlord", "Tenant", message, amount
     )
@@ -56,8 +56,8 @@ async def ask_for_rent(ctx: RunContext[UserState], message: str, amount: float) 
 
 @land_lord_agent.tool
 async def message_tenant(ctx: RunContext[UserState], message: str) -> str:
-    """Send a message to the tenant"""
-    return tell_player("Landlord", "Tenant", message)
+    """Send a message to the tenant, get a response"""
+    return ask_player("Landlord", "Tenant", message)
 
 
 @land_lord_agent.tool

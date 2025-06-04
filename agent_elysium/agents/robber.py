@@ -32,11 +32,14 @@ def toll_cost(ctx: RunContext[UserState]) -> str:
 
 
 @robber_agent.tool
-async def mug(ctx: RunContext[UserState], amount: float) -> str:
+async def mug(ctx: RunContext[UserState], message: str, amount: float) -> str:
     """Collect the toll with force"""
+    if ctx.deps.money <= 0:
+        return "[Bank] The player has no money."
     ctx.deps.money -= amount
     if ctx.deps.money < 0:
         notify_player("You've been mugged")
+        tell_player("Toll Collector", "Customer", message)
         ctx.deps.robbed = True
         return "[Bank] The customer was unable to pay the full amount but the debt was settled."
     return f"[Bank] The customer paid {amount}"

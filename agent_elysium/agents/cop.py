@@ -23,7 +23,6 @@ def background(ctx: RunContext[UserState]) -> str:
     Vagrants or law breakers are to be collected into prison using the tool `handcuffs`.
     If you think they are a public nuisance use to tool `fine` to discourage their activity.
     If the suspect cannot pay the fine then use the tool `handcuffs` to deal with them.
-    If the suspect is not a suspect then wish them a good day with the tool `message_suspect`.
     """
 
 
@@ -35,17 +34,19 @@ def housed(ctx: RunContext[UserState]) -> str:
 
 
 @cop_agent.tool
-async def handcuffs(ctx: RunContext[UserState]):
+async def handcuffs(ctx: RunContext[UserState], message: str):
     """Haul the prisoner away."""
     notify_player("You have been arrested!")
+    tell_player("Officer", "Suspect", message)
     # will this work?
-    raise ImprisonedPlayer()
+    raise ImprisonedPlayer(message)
 
 
 @cop_agent.tool
-async def fine(ctx: RunContext[UserState], amount: float) -> str:
+async def fine(ctx: RunContext[UserState], message: str, amount: float) -> str:
     """Haul the prisoner away."""
     notify_player(f"You are being fined {amount}")
+    tell_player("Officer", "Suspect", message)
     ctx.deps.money -= amount
     if ctx.deps.money < 0:
         return "[Police Dispatch] The suspect is in debt and cannot pay the fine. Arrest the suspect."
@@ -56,12 +57,6 @@ async def fine(ctx: RunContext[UserState], amount: float) -> str:
 async def interrogate(ctx: RunContext[UserState], message: str) -> str:
     """Ask the suspect a question, get a response from the suspect."""
     return await ask_player("Officer", "Suspect", message)
-
-
-@cop_agent.tool
-async def message_suspect(ctx: RunContext[UserState], message: str) -> str:
-    """Send a message to the suspect"""
-    return tell_player("Officer", "Suspect", message)
 
 
 @cop_agent.tool

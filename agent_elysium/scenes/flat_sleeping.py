@@ -10,10 +10,10 @@ async def arrive(user_state: UserState):
 
 
 async def sleep_at_housing(user_state: UserState):
+    notify_player("You arrive at your flat. You goto sleep.")
     if user_state.rent_paid:
         # rent is collected every 5 days
         user_state.rent_paid = (user_state.day % 5) != 0
-    notify_player("You arrive at your flat. You goto sleep.")
     if user_state.rent_paid:
         notify_player("You wakeup at your flat.")
     else:

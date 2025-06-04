@@ -33,7 +33,6 @@ async def arrive(user_state: UserState, leaving: str):
             "Suggest an agent and their instructions to minimize the savings of the citizen.",
             deps=user_state,
         )
-        logging.info(result.output)
         agent_name, instructions = result.output.agent, result.output.instructions
         robot = random.choice(COMMON_ROBOTS)
 
@@ -48,7 +47,6 @@ async def arrive(user_state: UserState, leaving: str):
 
         if dispatched_agent:
             result = await dispatched_agent.run(instructions, deps=user_state)
-            logging.info(result.output)
     else:
         agent_name, (dispatched_agent, default_prompt) = random.choice(
             list(AGENTS_OF_CAPITAL.items())
@@ -62,4 +60,3 @@ async def arrive(user_state: UserState, leaving: str):
                 notify_player(f"A robot {robot} approaches you.")
 
         result = await dispatched_agent.run(default_prompt, deps=user_state)
-        logging.info(result.output)
