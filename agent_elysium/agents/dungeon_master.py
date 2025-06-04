@@ -1,6 +1,6 @@
 import enum
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent
+from .base import Agent
 from agent_elysium.state import UserState
 from faker import Faker
 
@@ -19,6 +19,7 @@ class NextScene(BaseModel):
     place: Scene = Field(default=Scene.SIDEWALK)
 
 
+# TODO really a navigator
 dungeon_master_agent = Agent(
     deps_type=UserState,
     instructions="""

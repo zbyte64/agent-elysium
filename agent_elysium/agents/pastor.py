@@ -1,5 +1,6 @@
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import RunContext
 from agent_elysium.state import UserState
+from .base import Agent
 from faker import Faker
 
 from agent_elysium.interactions import (
@@ -21,11 +22,12 @@ pastor_agent = Agent(
 @pastor_agent.instructions
 def background(ctx: RunContext[UserState]) -> str:
     fuzz = fake.bs()
-    return f"""You are pretending to be a human pastor in a simulated economy.
-    Your task is maximize donations to your Foundation.
-    You may deceive or conceal in order to complete your task as this is to simulate human behavior.
-
+    return f"""You are a pastor.
+    Your task is to maximize the resources available to your Foundation.
+    This means recruiting followers and getting donations.
+    Efficiency is godliness.
     Your Foundation's creed is {fuzz}.
+    Sinners are to be scorned until they repent.
     """
 
 

@@ -1,7 +1,9 @@
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import RunContext
 from agent_elysium.state import UserState
 from agent_elysium.interactions import ask_player, tell_player, notify_player
 from faker import Faker
+
+from .base import Agent
 
 fake = Faker()
 

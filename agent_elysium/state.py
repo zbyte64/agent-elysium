@@ -9,7 +9,6 @@ class UserState(BaseModel):
     rent_paid: bool = False
     has_job: bool = True
     housed: bool = True
-    imprisoned: bool = False
     robbed: bool = False
     warrant: bool = False
     day: int = 0

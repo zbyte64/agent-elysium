@@ -1,10 +1,11 @@
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import RunContext
 from agent_elysium.state import UserState
 from agent_elysium.interactions import (
     ask_player_for_payment,
     tell_player,
     notify_player,
 )
+from .base import Agent
 
 
 land_lord_agent = Agent(
@@ -47,7 +48,9 @@ async def ask_for_rent(ctx: RunContext[UserState], message: str, amount: float) 
         ctx.deps, "Landlord", "Tenant", message, amount
     )
     if paid:
+        ctx.deps.housed = True
         ctx.deps.rent_paid = True
+        ctx.deps.rent_cost = amount
     return response
 
 

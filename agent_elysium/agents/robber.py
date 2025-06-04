@@ -1,10 +1,11 @@
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import RunContext
 from agent_elysium.state import UserState
 from agent_elysium.interactions import (
     ask_player_for_payment,
     tell_player,
     notify_player,
 )
+from .base import Agent
 
 
 robber_agent = Agent(

@@ -3,6 +3,14 @@ import sys
 from .state import UserState
 
 
+class ImprisonedPlayer(AssertionError):
+    """
+    Raised when the player is imprisoned, game over.
+    """
+
+    pass
+
+
 async def ainput(string: str) -> str:
     sys.stdout.write(string)
     # await asyncio.to_thread(sys.stdout.write, f"{string} ")

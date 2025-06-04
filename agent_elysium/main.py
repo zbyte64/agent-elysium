@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 import os
 import logging
 from pydantic_ai.settings import ModelSettings
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 
 from . import agents, scenes, user_traveling
 from .state import UserState
-from .interactions import notify_player, PLAYER_INTERACTION
+from .interactions import notify_player, PLAYER_INTERACTION, ImprisonedPlayer
 from .game_interfaces import auto
 
 
@@ -44,28 +45,35 @@ def run_story_with_params(user_state: UserState):
 
 
 async def async_run_story_with_params(user_state: UserState):
-    while not user_state.imprisoned:
-        user_state.day += 1
-        leaving = None
-        if user_state.housed:
-            if user_state.rent_cost:
-                await scenes.flat_sleeping.arrive(user_state=user_state)
-                leaving = "flat"
-            else:
-                await scenes.shelter_sleeping.arrive(user_state=user_state)
-                leaving = "shelter"
-        else:
-            await scenes.sidewalk_sleeping.arrive(user_state=user_state)
-            leaving = "sidewalk"
-
-        if user_state.has_job:
-            await scenes.job_working.arrive(user_state)
-            leaving = "job"
-
-        # ask user for destination
-        await user_traveling.arrive(user_state, leaving)
+    try:
+        while True:
+            await daily_routine(user_state)
+    except ImprisonedPlayer:
+        pass
 
     notify_player(f"You survived {user_state.day} day(s) before loosing your freedom.")
+
+
+async def daily_routine(user_state: UserState):
+    user_state.day += 1
+    leaving = None
+    if user_state.housed:
+        if user_state.rent_cost:
+            await scenes.flat_sleeping.arrive(user_state=user_state)
+            leaving = "flat"
+        else:
+            await scenes.shelter_sleeping.arrive(user_state=user_state)
+            leaving = "shelter"
+    else:
+        await scenes.sidewalk_sleeping.arrive(user_state=user_state)
+        leaving = "sidewalk"
+
+    if user_state.has_job:
+        await scenes.job_working.arrive(user_state)
+        leaving = "job"
+
+    # ask user for destination
+    await user_traveling.arrive(user_state, leaving)
 
 
 def run_story():

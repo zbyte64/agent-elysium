@@ -1,6 +1,12 @@
-from pydantic_ai import Agent, RunContext
+from pydantic_ai import RunContext
 from agent_elysium.state import UserState
-from agent_elysium.interactions import ask_player, tell_player, notify_player
+from agent_elysium.interactions import (
+    ask_player,
+    tell_player,
+    notify_player,
+    ImprisonedPlayer,
+)
+from .base import Agent
 
 
 cop_agent = Agent(
@@ -29,11 +35,11 @@ def housed(ctx: RunContext[UserState]) -> str:
 
 
 @cop_agent.tool
-async def handcuffs(ctx: RunContext[UserState]) -> str:
+async def handcuffs(ctx: RunContext[UserState]):
     """Haul the prisoner away."""
     notify_player("You have been arrested!")
-    ctx.deps.imprisoned = True
-    return "[Police Dispatch] The suspect is arrested and taken to prison. Justice and commerce has been served."
+    # will this work?
+    raise ImprisonedPlayer()
 
 
 @cop_agent.tool

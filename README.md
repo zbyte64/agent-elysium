@@ -8,7 +8,7 @@ How many days can you survive?
 ## Setup
 
 1. Install uv
-2. Install ollama with a tool capable model
+2. Install ollama with a tool capable model (qwen3:8b is recommended)
 3. Create a .env file and define:
   * set OPENAI_PROVIDER (ie OPENAI_PROVIDE=http://localhost:11434/v1)
   * set OPENAI_MODEL_NAME (ie OPENAI_MODEL_NAME=qwen3:8b)
