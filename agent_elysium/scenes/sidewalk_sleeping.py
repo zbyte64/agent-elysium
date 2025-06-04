@@ -22,3 +22,5 @@ async def arrive(user_state: UserState):
         await robber_agent.run(
             "Mug the customer for sleeping in a public space.", deps=user_state
         )
+    else:
+        notify_player("You wakeup at your spot.")

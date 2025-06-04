@@ -1,5 +1,4 @@
 import asyncio
-from functools import partial
 import os
 import logging
 from pydantic_ai.settings import ModelSettings
@@ -15,7 +14,7 @@ from .game_interfaces import auto
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 
 
 model = OpenAIModel(

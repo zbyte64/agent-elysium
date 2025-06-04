@@ -16,9 +16,10 @@ def interaction_params(user_state):
         sys.stdout.write(msg)
         # msg is a prompt ie "[Player]:" , give some instructions
         all_messages = [
+            "# Scene",
             *map(str, pending_messages),
-            "Respond to the following request of the other player with only a single line of text.\n",
             msg,
+            "# You Response",
         ]
         pending_messages.clear()
         result = await citizen_agent.run(

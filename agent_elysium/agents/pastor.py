@@ -40,12 +40,6 @@ async def ask_for_response(ctx: RunContext[UserState], message: str) -> str:
 
 
 @pastor_agent.tool
-async def message_citizen(ctx: RunContext[UserState], message: str) -> str:
-    """Send a message to the citizen"""
-    return tell_player("Pastor", "Citizen", message)
-
-
-@pastor_agent.tool
 async def ask_for_donation(
     ctx: RunContext[UserState], message: str, amount: float
 ) -> str:
