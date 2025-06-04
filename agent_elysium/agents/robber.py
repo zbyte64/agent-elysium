@@ -1,9 +1,11 @@
 from pydantic_ai import RunContext
 from agent_elysium.state import UserState
 from agent_elysium.interactions import (
+    ExitScene,
     ask_player_for_payment,
     tell_player,
     notify_player,
+    ask_player,
 )
 from .base import Agent
 
@@ -41,8 +43,7 @@ async def mug(ctx: RunContext[UserState], message: str, amount: float) -> str:
         notify_player("You've been mugged")
         tell_player("Toll Collector", "Customer", message)
         ctx.deps.robbed = True
-        return "[Bank] The customer was unable to pay the full amount but the debt was settled."
-    return f"[Bank] The customer paid {amount}"
+    raise ExitScene("The Toll Collector leaves.")
 
 
 @robber_agent.tool
@@ -51,13 +52,15 @@ async def ask_for_toll(ctx: RunContext[UserState], message: str, amount: float) 
     paid, response = await ask_player_for_payment(
         ctx.deps, "Toll Collector", "Customer", message, amount
     )
+    if paid:
+        raise ExitScene("The Toll Collector leaves.")
     return response
 
 
 @robber_agent.tool
 async def message_customer(ctx: RunContext[UserState], message: str) -> str:
-    """Send a message to the customer"""
-    return tell_player("Toll Collector", "Customer", message)
+    """Send a message to the customer, get a response"""
+    return ask_player("Toll Collector", "Customer", message)
 
 
 @robber_agent.tool

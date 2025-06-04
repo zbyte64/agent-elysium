@@ -4,6 +4,7 @@ from .base import Agent
 from faker import Faker
 
 from agent_elysium.interactions import (
+    ExitScene,
     ask_player_for_payment,
     tell_player,
     notify_player,
@@ -76,5 +77,5 @@ async def evict(ctx: RunContext[UserState], message: str) -> str:
         return "[Bank] The citizen is already evicted."
     notify_player("you are a bum now!")
     ctx.deps.housed = False
-    info = tell_player("Pastor", "Citizen", message)
-    return info + "\nThe Tenant has left.\n[Bank] The citizen has been evicted."
+    tell_player("Pastor", "Citizen", message)
+    raise ExitScene("You have been escorted off the property.")

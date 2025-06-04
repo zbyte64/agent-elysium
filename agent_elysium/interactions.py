@@ -11,6 +11,14 @@ class ImprisonedPlayer(AssertionError):
     pass
 
 
+class ExitScene(AssertionError):
+    """
+    Raised when the player has left the scene, evicted.
+    """
+
+    pass
+
+
 async def ainput(string: str) -> str:
     sys.stdout.write(string)
     # await asyncio.to_thread(sys.stdout.write, f"{string} ")

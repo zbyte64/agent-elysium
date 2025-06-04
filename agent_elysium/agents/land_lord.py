@@ -1,6 +1,7 @@
 from pydantic_ai import RunContext
 from agent_elysium.state import UserState
 from agent_elysium.interactions import (
+    ExitScene,
     ask_player_for_payment,
     tell_player,
     notify_player,
@@ -89,8 +90,8 @@ async def evict(ctx: RunContext[UserState], message: str) -> str:
         return "The tenant has already left."
     notify_player("you are a bum now!")
     ctx.deps.housed = False
-    info = tell_player("Landlord", "Tenant", message)
-    return info + "\n[Tenant] I am leaving.\nThe Tenant has left."
+    tell_player("Landlord", "Tenant", message)
+    raise ExitScene("You have been escorted off the property.")
 
 
 @land_lord_agent.tool

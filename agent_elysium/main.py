@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from . import agents, scenes, user_traveling
 from .state import UserState
-from .interactions import notify_player, PLAYER_INTERACTION, ImprisonedPlayer
+from .interactions import ExitScene, notify_player, PLAYER_INTERACTION, ImprisonedPlayer
 from .game_interfaces import auto
 
 
@@ -56,24 +56,36 @@ async def async_run_story_with_params(user_state: UserState):
 
 async def daily_routine(user_state: UserState):
     user_state.day += 1
-    leaving = None
+    for act in [act1, act2, act3]:
+        try:
+            await act(user_state)
+        except ExitScene as e:
+            notify_player(e.args[0])
+
+
+async def act1(user_state: UserState):
+    # TODO explicit flag for where you are housed
     if user_state.housed:
         if user_state.rent_cost:
+            user_state.leaving = "flat"
             await scenes.flat_sleeping.arrive(user_state=user_state)
-            leaving = "flat"
         else:
+            user_state.leaving = "shelter"
             await scenes.shelter_sleeping.arrive(user_state=user_state)
-            leaving = "shelter"
     else:
+        user_state.leaving = "sidewalk"
         await scenes.sidewalk_sleeping.arrive(user_state=user_state)
-        leaving = "sidewalk"
 
+
+async def act2(user_state: UserState):
     if user_state.has_job:
+        user_state.leaving = "job"
         await scenes.job_working.arrive(user_state)
-        leaving = "job"
 
+
+async def act3(user_state: UserState):
     # ask user for destination
-    await user_traveling.arrive(user_state, leaving)
+    await user_traveling.arrive(user_state)
 
 
 def run_story():

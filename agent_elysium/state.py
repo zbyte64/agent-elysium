@@ -12,3 +12,4 @@ class UserState(BaseModel):
     robbed: bool = False
     warrant: bool = False
     day: int = 0
+    leaving: str = ""

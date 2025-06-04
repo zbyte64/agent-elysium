@@ -1,6 +1,6 @@
 from pydantic_ai import RunContext
 from agent_elysium.state import UserState
-from agent_elysium.interactions import ask_player, tell_player, notify_player
+from agent_elysium.interactions import ExitScene, ask_player, tell_player, notify_player
 from faker import Faker
 
 from .base import Agent
@@ -36,9 +36,9 @@ async def fire(ctx: RunContext[UserState], message: str) -> str:
         return "[Company] The employee has already been fired."
     ctx.deps.has_job = False
     ctx.deps.income = 0
-    info = tell_player("HR", "Employee", message)
+    tell_player("HR", "Employee", message)
     notify_player("You have been fired")
-    return info + "\n[Company] The employee has been fired."
+    raise ExitScene("You have been escorted off the premise")
 
 
 @boss_agent.tool
